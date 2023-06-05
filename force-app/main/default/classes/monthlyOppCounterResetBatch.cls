@@ -15,8 +15,8 @@ public with sharing class monthlyOppCounterResetBatch implements Database.Batcha
                 u.monthlyOppCounter__c = 0;
                 userList.add(u);
             }
-        update userList;
-        System.debug('Executed Update');
+            update userList;
+            System.debug('Executed Update');
         }
     }
 

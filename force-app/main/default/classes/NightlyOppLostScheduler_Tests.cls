@@ -29,6 +29,7 @@ public with sharing class NightlyOppLostScheduler_Tests {
             FROM AsyncApexJob 
             WHERE JobType = 'BatchApex'
             ];
+        System.assertEquals(1, Limits.getQueueableJobs());
         System.assertEquals(1, jobsApexBatch.size(), 'expecting one apex batch job');
         System.assertEquals('NightlyOppLostBatch', jobsApexBatch[0].ApexClass.Name, 'expecting specific batch job');
     }
