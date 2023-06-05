@@ -9,6 +9,24 @@ public with sharing class OpportunityTriggerHandler_Tests {
         UserRole otherRole  = new UserRole(Name = 'Other guy'); 
         insert otherRole;
 
+        /*  next time try bulk insert
+            like that
+
+                List<UserRole> roles = new List<UserRole>{
+                    new UserRole(Name = 'Sales guy'),
+                    new UserRole(Name = 'Other guy')
+                };
+                insert roles;
+                // and then in code you use roles[0].Id etc
+
+            or if you really prefer them as "named variables" - bulkify them just for the insert and then carry on as you were
+
+                UserRole salesRole  = new UserRole(Name = 'Sales guy');
+                UserRole otherRole  = new UserRole(Name = 'Other guy'); 
+                insert new List<UserRole>{salesRole, otherRole}; // magic happens, Id gets written to right variable
+                // and then in code you use salesRole.Id
+        */
+
         Profile p = [SELECT Id FROM Profile WHERE Name='Standard User']; 
 
         User user1 = new User(
@@ -28,7 +46,7 @@ public with sharing class OpportunityTriggerHandler_Tests {
         User user2 = new User(
             Alias               = 'standt', 
             Email               ='standarduser@testorg.com3333', 
-            UserName            ='standarduser@testorg.com3333',
+            UserName            ='standarduser@testorg.com3333', // uniqueness will smite you, like in the other test
             LastName            ='TestingOther', 
             ProfileId           = p.Id, 
             UserRoleId          = otherRole.Id,
@@ -58,7 +76,7 @@ public with sharing class OpportunityTriggerHandler_Tests {
                     WHERE Id = :u.Id
                 ];
 
-                Opportunity opp2 = new Opportunity(Name = 'TestWon', StageName = 'Prospecting', CloseDate = System.today() + 5);
+                Opportunity opp2 = new Opportunity(Name = 'TestWon', StageName = 'Prospecting', CloseDate = System.today() + 5); // like in other places, this will "random" start to fail closer to month end
                 insert opp2;
 
                 User insertedU2 = [
@@ -235,7 +253,9 @@ public with sharing class OpportunityTriggerHandler_Tests {
 
         System.runAs(u){
             Test.startTest();
-                Opportunity opp1 = new Opportunity(Name = 'TestWon', StageName = 'Closed Won', CloseDate = System.today() + 5);
+                Opportunity opp1 = new Opportunity(Name = 'TestWon', StageName = 'Closed Won', CloseDate = System.today() + 5); // I understand a lot here is copy-paste orgy ;)
+                // but keep it simple for the poor maintenance guy tasked with fixing a failed test (or figuring out why his change broke a test nobody touched in ages)
+                // focus on what's important. Like here it should do nothing regardless of the date, right? make it System.today() to ensure it's this month and show the guy it's still expected to fail.
                 insert opp1;
 
                 User insertedU1 = [
@@ -332,6 +352,9 @@ public with sharing class OpportunityTriggerHandler_Tests {
 					}
 
             Test.stopTest();
+
+            // Not sure what you're testing here. Verify the counter is still 0 on user?
+            // What functionality does this add
         }
     }
 

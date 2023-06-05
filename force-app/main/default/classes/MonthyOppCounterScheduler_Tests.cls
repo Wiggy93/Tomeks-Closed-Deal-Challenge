@@ -20,7 +20,7 @@ public with sharing class MonthyOppCounterScheduler_Tests {
             SELECT Id, ApexClassId, ApexClass.Name, Status, JobType
             FROM AsyncApexJob
         ];
-        System.assertEquals(0, preScheduleJobs.size(), 'no jobs should be queued prior to test starting');
+        System.assertEquals(0, preScheduleJobs.size(), 'no jobs should be queued prior to test starting'); // this will crash in any decent org with existing jobs, you'd need something like "WHERE JobName = 'MonthyOppCounterScheduler test'"
 
         Test.startTest();
             String jobId = System.schedule('MonthyOppCounterScheduler test', cronExpr, new monthlyOppCounterScheduler());
@@ -39,7 +39,8 @@ public with sharing class MonthyOppCounterScheduler_Tests {
         List<AsyncApexJob> jobsApexBatch = [
             SELECT Id, ApexClassID, ApexClass.Name, Status, JobType 
             FROM AsyncApexJob 
-            WHERE JobType = 'BatchApex'
+            WHERE JobType = 'BatchApex' // Again, any mature org will see other batch jobs on the list, you'd need to filter it more. WHERE ApexClass.Name = 'monthlyOppCounterResetBatch' should work
+            // I mean why do it in apex if you can offload it on database, make less network traffic to your application
             ];
         System.assertEquals(1, jobsApexBatch.size(), 'expecting one apex batch job');
         System.assertEquals('monthlyOppCounterResetBatch', jobsApexBatch[0].ApexClass.Name, 'expecting specific batch job');
