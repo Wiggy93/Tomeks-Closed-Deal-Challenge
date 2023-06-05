@@ -4,8 +4,6 @@ trigger OpportunityTrigger on Opportunity (after insert, after update) {
 
      //would it be better to put if (opp.stageName == closedWon || stagename == closed lost) logic here to avoid wasting CPU time if opp doesn't trigger counter 
 
-    //add before update, add trigger.old
-
     //List<Opportunity> opps = new List<Opportunity>();
     Set<Id> ownerIds = new Set<Id>();
     for (Opportunity o : Trigger.new) {
@@ -23,8 +21,8 @@ trigger OpportunityTrigger on Opportunity (after insert, after update) {
         //3. Opp closed date is current month
         Boolean currentMonth = o.CloseDate.month() == Date.today().month() && o.CloseDate.year() == Date.today().year();
 
-
-        if ((toClosed || fromClosed || fromLostToWon || toLostFromWon) && currentMonth) {
+        
+        if ((toClosed || fromClosed || !fromLostToWon || !toLostFromWon) && currentMonth) {
             ownerIds.add(o.OwnerId);
         }
     }
