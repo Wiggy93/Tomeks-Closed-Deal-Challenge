@@ -6,6 +6,8 @@ public with sharing class NightlyOppLostBatch implements Database.Batchable<sObj
                         ' WHERE CloseDate = TODAY' + 
                         ' AND isWon = false' + 
                         (Test.isRunningTest() ? ' LIMIT 200' : '');
+        // This is a prime candidate for normal [SELECT...] query in brackets
+        // Test won't see other opps in the org, only the ones inserted as part of the test so there's no need for that limit 200
         return Database.getQueryLocator(query);
     }
 
@@ -18,7 +20,7 @@ public with sharing class NightlyOppLostBatch implements Database.Batchable<sObj
                 o.StageName = 'Closed Lost';
                 updateOpps.add(o);
             }
-            update updateOpps;
+            update updateOpps; // same as in other one, just update the original list of "opps"
             System.debug('Executed nightly update.');
         }
     }

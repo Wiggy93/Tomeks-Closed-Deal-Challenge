@@ -1,18 +1,35 @@
+/*  Guh... This shouldn't do everything
+    If you want your custom exception cool but typically they're 1-liner classes, they don't have so much logic in them.
+    And they're either in their own file or as an "inner class":
+
+        public with sharing class OpportunityTriggerHandler extends TriggerHandler{
+            //bla bla bla, variables, methods...
+            static void myMethod(Boolean x){
+                if(x){
+                    throw new OpportunityTriggerHandler.BadDataException('go away!');
+                }
+            }
+
+            public class BadDataException extents Exception{}
+        }
+*/
 public with sharing class OpportunityTriggerHandlerException extends Exception{
 
     //Assume 1 user triggering update to opportunity
+        // erm... yes, you can assume that. Triggers run for 1 user at a time which you can always see in UserInfo class. Another user would have their own trigger execution, their own debug log?
     //Assume can go into negative Opp Counts if you're a really bad salesperson that month.
 
     //implements schedulable for 1st month logic to reset all user.dealCounter = 0;
+        // this comment has no place here, doesn't help understanding what's going on in here ;)
 
     public static void oppDealCounter(Set<Id> ownerIds) {
 
-        Savepoint sp = Database.setSavepoint();
+        Savepoint sp = Database.setSavepoint(); // unused, wastes DML for no good reason. no try-catch, no rollback
 
         AggregateResult[] groupedOpportuniteis = [
             SELECT Count(Id) oppCount, OwnerId ownerId
             FROM Opportunity
-            WHERE OwnerId IN :ownerIds
+            WHERE OwnerId IN :ownerIds // isn't really to spec, where's the UserRole.Name LIKE '%Sales%'
             AND IsWon = TRUE
             AND CloseDate = THIS_MONTH
             GROUP BY OwnerId
@@ -30,6 +47,15 @@ public with sharing class OpportunityTriggerHandlerException extends Exception{
         }
 
         update users;
+
+        /*  Hm. OK, it works. I'd do it differently as some kind of "user1 => +5, user2 => -3" based on trigger.new
+            but it's not wrong per se. Congrats on using IsWon
+            Did you do the other bit of reducing another counter on lost deals?
+
+            I'm suprised you didn't get slapped with MIXED_DML exception. Does it work for you because you don't have a Role?
+
+            What's with this backup of commented out code below ;)
+        */
 
         // //List<Opportunity> oppList = (List<Opportunity>) oppTriggers;
         
